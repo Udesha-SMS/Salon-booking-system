@@ -1,24 +1,35 @@
-import logo from './logo.svg';
-import './App.css';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import 'leaflet/dist/leaflet.css';
+
+import Home from './pages/HomePage';
+import LoginSelection from './pages/LoginSelection';
+import CustomerLogin from './pages/Login';
+import Searchsalon from './pages/searchsalon';
+import Profile from './pages/Profile';
+import SelectServicesPage from './pages/SelectServicesPage';
+import SelectProfessionalPage from './pages/SelectProfessionalPage';
+import SelectTimePage from './pages/SelectTimePage';
+import MyAppointmentsPage from "./pages/MyAppointmentsPage";
+import BookSelectionPage from './pages/BookSelectionPage';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginSelection />} />
+        <Route path="/login/customer" element={<CustomerLogin />} />
+        <Route path="/searchsalon" element={<Searchsalon />} />
+        <Route path="/profile" element={<Profile />} /> 
+        <Route path="/select-services/:salonId" element={<SelectServicesPage />} />
+        <Route path="/select-professional/:salonId" element={<SelectProfessionalPage />} />
+        <Route path="/select-professional" element={<SelectProfessionalPage />} />
+        <Route path="/select-time" element={<SelectTimePage />} />
+        <Route path="/appointments" element={<MyAppointmentsPage />} />
+        <Route path="/BookSelectionPage" element={<BookSelectionPage />} />
+      </Routes>
+    </Router>
   );
 }
 
