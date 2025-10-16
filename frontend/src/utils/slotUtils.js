@@ -11,17 +11,24 @@ export const minutesToTimeString = (minutes) => {
   return `${h}:${m}`;
 };
 
-export const durationToMinutes = (durationStr) => {
-  const parts = durationStr.split(" ");
+export function durationToMinutes(duration = "30 minutes") {
+  if (!duration) duration = "30 minutes";       // fallback if null/undefined
+  if (typeof duration !== "string") duration = String(duration);
+
+  const parts = duration.trim().split(" ").filter(p => p); // remove empty strings
   let minutes = 0;
+
   for (let i = 0; i < parts.length; i += 2) {
-    const val = parseInt(parts[i]);
-    const unit = parts[i + 1].toLowerCase();
-    if (unit.includes("hour")) minutes += val * 60;
-    else if (unit.includes("min")) minutes += val;
+    const val = parseInt(parts[i], 10);
+    const unit = (parts[i + 1] || "").toString().toLowerCase(); // ensure string before toLowerCase
+
+    if (unit.includes("hour")) minutes += (isNaN(val) ? 0 : val) * 60;
+    else if (unit.includes("min")) minutes += isNaN(val) ? 0 : val;
   }
+
   return minutes;
-};
+}
+
 
 export const computeEndTime = (startTime, duration) => {
   const startMins = timeStringToMinutes(startTime);

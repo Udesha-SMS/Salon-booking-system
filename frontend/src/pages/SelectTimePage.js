@@ -179,7 +179,7 @@ const SelectTimePage = () => {
   const slotKey = professionalId && selectedDate ? `${professionalId}-${selectedDate}` : null;
   const rawSlots = slotKey ? availableSlots[slotKey] : [];
   const safeSlots = Array.isArray(rawSlots) ? rawSlots : [];
-  const filteredSlots = currentService.duration ? filterMatchingSlots(safeSlots, currentService.duration) : safeSlots;
+  const filteredSlots = filterMatchingSlots(safeSlots, currentService.duration || "30 minutes");
 
   // ---------- when filteredSlots change and we're rescheduling try to auto-select ----------
   useEffect(() => {
