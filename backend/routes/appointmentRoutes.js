@@ -5,25 +5,28 @@ const TimeSlot = require("../models/TimeSlot");
 const Professional = require("../models/Professional");
 const dayjs = require("dayjs");
 
-
 // ✅ SAFER Duration Parser (handles many formats)
+// slotUtils.js
 const durationToMinutes = (durationStr) => {
-  if (!durationStr) return 30; // default fallback
+
+  if (!durationStr) return 30; // fallback default
+
+  const str = String(durationStr).trim().toLowerCase();
   let minutes = 0;
 
-  // Support flexible formats like: "15min", "1h 30min", "1 hour", "2 hours 15 mins"
   const regex = /(\d+)\s*(h|hour|hours|m|min|mins|minute|minutes)/gi;
-  const matches = [...durationStr.matchAll(regex)];
+  const matches = [...str.matchAll(regex)];
 
   for (const match of matches) {
     const value = parseInt(match[1]);
-    const unit = match[2].toLowerCase();
+    const unit = match[2] ? match[2].toLowerCase() : "";
     if (unit.startsWith("h")) minutes += value * 60;
     else if (unit.startsWith("m")) minutes += value;
   }
 
   return minutes || 30;
 };
+
 
 
 // ✅ Compute end time from start time and duration
@@ -35,7 +38,6 @@ const computeEndTime = (startTime, duration) => {
   const endM = String(totalEnd % 60).padStart(2, "0");
   return `${endH}:${endM}`;
 };
-
 
 // 🔁 Auto-generate time slots (9AM - 6PM, every 5 min) for all professionals for 7 days
 const generateWeeklyTimeSlots = async () => {
@@ -79,7 +81,6 @@ const generateWeeklyTimeSlots = async () => {
 // Run slot generator on server start
 generateWeeklyTimeSlots();
 
-
 // ✅ GET: Appointments by salonId with filters
 router.get("/salon/:id", async (req, res) => {
   try {
@@ -100,13 +101,14 @@ router.get("/salon/:id", async (req, res) => {
   }
 });
 
-
 // ✅ POST: Create appointments + mark slots booked
 router.post("/", async (req, res) => {
   try {
     const { phone, email, name, appointments = [] } = req.body;
-    if (!phone && !email) return res.status(400).json({ message: "Phone or email is required" });
-    if (!appointments.length) return res.status(400).json({ message: "No appointments provided" });
+    if (!phone && !email)
+      return res.status(400).json({ message: "Phone or email is required" });
+    if (!appointments.length)
+      return res.status(400).json({ message: "No appointments provided" });
 
     const saved = await Promise.all(
       appointments.map(async (appt) => {
@@ -116,7 +118,9 @@ router.post("/", async (req, res) => {
         const newAppt = new Appointment({
           salonId: appt.salonId,
           professionalId: appt.professionalId || null,
-          services: [{ name: appt.serviceName, price: appt.price, duration: appt.duration }],
+          services: [
+            { name: appt.serviceName, price: appt.price, duration: appt.duration },
+          ],
           date: appt.date,
           startTime: appt.startTime,
           endTime,
@@ -153,7 +157,6 @@ router.post("/", async (req, res) => {
   }
 });
 
-
 // ✅ GET: Appointments by user (email or phone)
 router.get("/", async (req, res) => {
   const { email, phone } = req.query;
@@ -164,14 +167,15 @@ router.get("/", async (req, res) => {
       ? { "user.phone": phone }
       : {};
 
-    const result = await Appointment.find(query).sort({ createdAt: -1 }).populate("salonId");
+    const result = await Appointment.find(query)
+      .sort({ createdAt: -1 })
+      .populate("salonId");
     res.json(result);
   } catch (err) {
     console.error("❌ Error fetching appointments:", err);
     res.status(500).json({ message: "Error fetching appointments" });
   }
 });
-
 
 // ✅ DELETE: Appointment + free its slots
 router.delete("/:id", async (req, res) => {
@@ -197,7 +201,6 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ message: "Failed to delete appointment" });
   }
 });
-
 
 // ✅ PATCH: Update appointment status
 router.patch("/:id/status", async (req, res) => {
@@ -230,15 +233,16 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
-
-// ✅ PATCH: Reschedule appointment (from your version)
+// ✅ PATCH: Reschedule appointment
 router.patch("/:id/reschedule", async (req, res) => {
   try {
     const appointmentId = req.params.id;
     const { date, startTime, endTime, professionalId } = req.body;
 
     if (!date || !startTime || !endTime) {
-      return res.status(400).json({ success: false, message: "date, startTime and endTime are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "date, startTime and endTime are required" });
     }
 
     const appt = await Appointment.findById(appointmentId);
@@ -289,6 +293,5 @@ router.patch("/:id/reschedule", async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to reschedule appointment" });
   }
 });
-
 
 module.exports = router;
