@@ -1,0 +1,174 @@
+/* Main container for the page */
+.pro-v2-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f6f8;
+}
+
+/* Main content area (next to sidebar) */
+.pro-v2-main {
+  flex: 1;
+  padding: 30px 40px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.pro-v2-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.pro-v2-header h1 {
+  font-size: 28px;
+  color: #2c3e50;
+}
+
+.pro-v2-add-btn {
+  padding: 10px 22px;
+  border-radius: 8px;
+  background-color: #3498db;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+.pro-v2-add-btn:hover {
+  background-color: #2980b9;
+}
+
+/* Grid layout for professional cards */
+.pro-v2-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+/* Professional card */
+.pro-v2-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px 15px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  transition: transform 0.3s;
+}
+
+.pro-v2-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Professional image */
+.pro-v2-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 12px;
+  border: 2px solid #3498db;
+}
+
+/* Info section */
+.pro-v2-info strong {
+  display: block;
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.pro-v2-info p {
+  font-size: 14px;
+  color: #666;
+  margin: 2px 0;
+}
+
+/* Action buttons inside card */
+.pro-v2-actions {
+  margin-top: 10px;
+}
+
+.pro-v2-actions button {
+  margin: 4px 4px 0 0;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: #3498db;
+  color: white;
+  font-size: 12px;
+  transition: 0.3s;
+}
+
+.pro-v2-actions button:hover {
+  background-color: #2980b9;
+}
+
+/* Popup overlay */
+.pro-v2-popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Popup box */
+.pro-v2-popup {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 30px 25px;
+  width: 400px;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Popup input fields */
+.pro-v2-popup input[type="text"],
+.pro-v2-popup input[type="file"] {
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Popup actions buttons */
+.pro-v2-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.pro-v2-save-btn {
+  background-color: #3498db;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.pro-v2-save-btn:hover {
+  background-color: #2980b9;
+}
+
+.pro-v2-cancel-btn {
+  background-color: #ccc;
+  color: #333;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+.pro-v2-cancel-btn:hover {
+  background-color: #999;
+}
