@@ -36,38 +36,53 @@ const SearchSalon = () => {
     navigate("/login");
   };
 
-  // Fetch all salons and attach average ratings
-  const fetchSalons = useCallback(async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/salons");
-      let salons = await res.json();
+const fetchSalons = useCallback(async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/salons");
+    let salons = await res.json();
 
-      // Fetch average ratings for each salon
-      const salonsWithRatings = await Promise.all(
-        salons.map(async (salon) => {
-          try {
-            const fbRes = await fetch(`http://localhost:5000/api/feedback/${salon._id}`);
-            const feedbacks = await fbRes.json();
-            const avgRating = feedbacks.length
-              ? feedbacks.reduce((sum, fb) => sum + fb.rating, 0) / feedbacks.length
-              : 0;
-            return { ...salon, avgRating: avgRating.toFixed(1) };
-          } catch (err) {
-            return { ...salon, avgRating: 0 };
-          }
-        })
-      );
+    const salonsWithRatings = await Promise.all(
+      salons.map(async (salon) => {
+        try {
+          // Fetch all professionals in this salon
+          const profRes = await fetch(`http://localhost:5000/api/professionals/${salon._id}`);
+          const professionals = await profRes.json();
 
-      // Sort salons by average rating descending
-      salonsWithRatings.sort((a, b) => b.avgRating - a.avgRating);
+          // Fetch feedbacks for each professional
+          const allFeedbacks = await Promise.all(
+            professionals.map(async (pro) => {
+              const fbRes = await fetch(`http://localhost:5000/api/feedback/professionals/${pro._id}`);
+              const data = await fbRes.json();
+              return data.feedbacks || []; // get only feedback array
+            })
+          );
 
-      setAllSalons(salonsWithRatings);
-      if (!isNearbyMode) applyFilters(salonsWithRatings, query, genderFilter);
-    } catch (err) {
-      console.error("❌ Failed to load salons", err);
-      alert("Failed to load salons");
-    }
-  }, [query, genderFilter, isNearbyMode]);
+          // Flatten all feedbacks
+          const flatFeedbacks = allFeedbacks.flat();
+
+          // Calculate average rating
+          const avgRating = flatFeedbacks.length
+            ? flatFeedbacks.reduce((sum, fb) => sum + fb.rating, 0) / flatFeedbacks.length
+            : 0;
+
+          return { ...salon, avgRating: avgRating.toFixed(1) };
+        } catch (err) {
+          return { ...salon, avgRating: 0 };
+        }
+      })
+    );
+
+    // Sort by rating
+    salonsWithRatings.sort((a, b) => b.avgRating - a.avgRating);
+
+    setAllSalons(salonsWithRatings);
+    if (!isNearbyMode) applyFilters(salonsWithRatings, query, genderFilter);
+  } catch (err) {
+    console.error("Failed to load salons", err);
+    alert("Failed to load salons");
+  }
+}, [query, genderFilter, isNearbyMode]);
+
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -98,39 +113,55 @@ const SearchSalon = () => {
     setFilteredSalons(filtered);
   };
 
-  const fetchNearbySalons = async (lat, lng, manual = false) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/salons/nearby?lat=${lat}&lng=${lng}`);
-      if (!res.ok) throw new Error("Failed to load nearby salons");
-      let data = await res.json();
+const fetchNearbySalons = async (lat, lng, manual = false) => {
+  try {
+    const res = await fetch(`http://localhost:5000/api/salons/nearby?lat=${lat}&lng=${lng}`);
+    if (!res.ok) throw new Error("Failed to load nearby salons");
+    let data = await res.json();
 
-      // Fetch ratings for nearby salons
-      const nearbyWithRatings = await Promise.all(
-        data.map(async (salon) => {
-          try {
-            const fbRes = await fetch(`http://localhost:5000/api/feedback/${salon._id}`);
-            const feedbacks = await fbRes.json();
-            const avgRating = feedbacks.length
-              ? feedbacks.reduce((sum, fb) => sum + fb.rating, 0) / feedbacks.length
-              : 0;
-            return { ...salon, avgRating: avgRating.toFixed(1) };
-          } catch {
-            return { ...salon, avgRating: 0 };
-          }
-        })
-      );
+    const nearbyWithRatings = await Promise.all(
+      data.map(async (salon) => {
+        try {
+          const profRes = await fetch(`http://localhost:5000/api/professionals/${salon._id}`);
+          const professionals = await profRes.json();
 
-      nearbyWithRatings.sort((a, b) => b.avgRating - a.avgRating);
+          const allFeedbacks = await Promise.all(
+            professionals.map(async (pro) => {
+              const fbRes = await fetch(`http://localhost:5000/api/feedback/professionals/${pro._id}`);
+              const fbData = await fbRes.json();
+              return fbData.feedbacks || [];
+            })
+          );
 
-      setNearbySalons(nearbyWithRatings);
-      setIsNearbyMode(true);
-      setManualNearbyMode(manual);
-      setQuery("");
-      setShowSuggestions(false);
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+          const flatFeedbacks = allFeedbacks.flat();
+          const avgRating = flatFeedbacks.length
+            ? flatFeedbacks.reduce((sum, fb) => sum + fb.rating, 0) / flatFeedbacks.length
+            : 0;
+
+          return { ...salon, avgRating: avgRating.toFixed(1) };
+        } catch {
+          return { ...salon, avgRating: 0 };
+        }
+      })
+    );
+
+    nearbyWithRatings.sort((a, b) => b.avgRating - a.avgRating);
+    setNearbySalons(nearbyWithRatings);
+    setIsNearbyMode(true);
+    setManualNearbyMode(manual);
+    setQuery("");
+    setShowSuggestions(false);
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+const getCityFromLocation = (location) => {
+  if (!location) return "";
+  const parts = location.split(","); // split by comma
+  return parts[parts.length - 1].trim(); // return last part (city)
+};
+
 
   // Auto fetch nearest salons on page load
   useEffect(() => {
@@ -310,7 +341,7 @@ const SearchSalon = () => {
                   <img src={salon.image || fallbackImage} alt={salon.name} className="salon-image" />
                   <div className="salon-info">
                     <h4>{salon.name}</h4>
-                    <p>{salon.location}</p>
+                    <p>{getCityFromLocation(salon.location)}</p>
                     <p><strong>{salon.salonType}</strong> salon</p>
                     <p className="rating-stars">
                       {Array.from({ length: 5 }, (_, i) => (
@@ -361,7 +392,7 @@ const SearchSalon = () => {
                   <img src={salon.image || fallbackImage} alt={salon.name} className="salon-image" />
                   <div className="salon-info">
                     <h4>{salon.name}</h4>
-                    <p>{salon.location}</p>
+                    <p>{getCityFromLocation(salon.location)}</p>
                     <p><strong>{salon.salonType}</strong> salon</p>
                     <p className="rating-stars">
                       {Array.from({ length: 5 }, (_, i) => (
