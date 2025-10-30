@@ -118,51 +118,18 @@ const Profile = () => {
 
         {/* Edit Profile Popup */}
         {editPopup && (
-  <div className="popup">
-    <div className="popup-content">
-      <h3>Edit Profile</h3>
-      <input 
-        type="text" 
-        name="name" 
-        placeholder="Name" 
-        value={formData.name} 
-        onChange={handleChange} 
-      />
-      <input 
-        type="email" 
-        name="email" 
-        placeholder="Email" 
-        value={formData.email} 
-        onChange={handleChange} 
-      />
-      <input 
-        type="text" 
-        name="phone" 
-        placeholder="Phone" 
-        value={formData.phone} 
-        onChange={handleChange} 
-      />
-
-      {/* Dropdown for Gender - same style as inputs */}
-      <select 
-        name="gender" 
-        value={formData.gender} 
-        onChange={handleChange}
-        className="form-input"   // 👈 same class as input (if you already use one)
-      >
-        <option value="">Select Gender</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Not Preferred">Not Preferred</option>
-      </select>
-
-      <button onClick={handleUpdateProfile}>Update</button>
-      <button onClick={() => setEditPopup(false)}>Cancel</button>
-    </div>
-  </div>
-)}
-
-
+          <div className="popup">
+            <div className="popup-content">
+              <h3>Edit Profile</h3>
+              <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleChange} />
+              <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleChange} />
+              <input type="text" name="phone" placeholder="Phone" value={formData.phone} onChange={handleChange} />
+              <input type="text" name="gender" placeholder="Gender" value={formData.gender} onChange={handleChange} />
+              <button onClick={handleUpdateProfile}>Update</button>
+              <button onClick={() => setEditPopup(false)}>Cancel</button>
+            </div>
+          </div>
+        )}
 
         {/* Add Address Popup */}
         {addressPopup && (

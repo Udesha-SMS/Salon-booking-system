@@ -347,9 +347,9 @@ body {
   background-color: #405ee2;
 }
 
-
-.add-review-btn {
-   background-color: #28a745;
+/* Review Button Styles */
+.review-btn {
+  background-color: #28a745;
   color: white;
   border: none;
   padding: 8px 16px;
@@ -357,10 +357,60 @@ body {
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.3s;
-
 }
 
-.add-review-btn:hover {
-    background-color: #218838;
+.review-btn:hover {
+  background-color: #218838;
+}
 
+/* Star Rating Styles */
+.rating-section {
+  margin: 15px 0;
+}
+
+.rating-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.star-rating {
+  display: flex;
+  gap: 5px;
+}
+
+.star {
+  font-size: 28px;
+  color: #ccc;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.star.filled {
+  color: #ff9800;
+}
+
+.star:hover {
+  color: #ff9800;
+}
+
+.review-textarea {
+  margin: 15px 0;
+}
+
+.review-textarea textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+/* Action buttons layout */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 15px;
 }

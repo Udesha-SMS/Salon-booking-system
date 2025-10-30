@@ -29,7 +29,7 @@ const Home = () => {
           <button className="nav-btn-light" onClick={() => navigate("/business")}>For Business</button>
           {!user ? (
             <>
-              <button className="nav-link" onClick={() => navigate("/login")}>Log In</button>
+              <button className="nav-link" onClick={() => navigate("/login/customer")}>Log In</button>
               <div className="menu-container">
                 <button className="nav-menu-btn" onClick={toggleMenu}>☰</button>
                 {menuOpen && (

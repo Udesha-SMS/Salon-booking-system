@@ -35,10 +35,10 @@ const BookSelectionPage = () => {
           <button className="select-btn">Select</button>
         </div>
 
-        {/* Group Booking */}
+       {/* Group Booking - FIXED: Now passes salon data */}
         <div
           className="booking-card group"
-          onClick={() => navigate("/searchsalon")}
+          onClick={() => navigate("/familybooking", { state: { salon } })}
         >
           <div className="card-icon">👩‍👩‍👧‍👦</div>
           <h2>Group Booking</h2>
