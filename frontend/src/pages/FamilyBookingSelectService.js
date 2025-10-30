@@ -62,7 +62,7 @@ const SelectServicesPage = () => {
 
   const handleContinue = () => {
     if (selectedServices.length === 0) return alert("Please select a service");
-    navigate(`/select-professional/${salon._id}`, {
+    navigate(`/familybookingselectprofessional/${salon._id}`, {
       state: {
         salon,
         selectedServices,
