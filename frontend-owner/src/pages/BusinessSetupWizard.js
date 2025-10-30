@@ -140,11 +140,11 @@ const BusinessSetupWizard = () => {
             <h1 className="main-title">What services do you offer?</h1>
             <div className="services-grid">
               <div
-                className={`service-card ${selectedService === 'both' ? 'selected' : ''}`}
-                onClick={() => setSelectedService('both')}
+                className={`service-card ${selectedService === 'Unisex' ? 'selected' : ''}`}
+                onClick={() => setSelectedService('Unisex')}
               >
-                <img src={maleFemaleImage} alt="Both" className="service-image" />
-                <div className="service-label">Both</div>
+                <img src={maleFemaleImage} alt="Unisex" className="service-image" />
+                <div className="service-label">Unisex</div>
               </div>
               <div
                 className={`service-card ${selectedService === 'male' ? 'selected' : ''}`}

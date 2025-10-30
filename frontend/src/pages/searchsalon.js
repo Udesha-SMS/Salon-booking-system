@@ -158,9 +158,24 @@ const fetchNearbySalons = async (lat, lng, manual = false) => {
 
 const getCityFromLocation = (location) => {
   if (!location) return "";
-  const parts = location.split(","); // split by comma
-  return parts[parts.length - 1].trim(); // return last part (city)
+
+  // Common Sri Lankan districts (you can add or remove as needed)
+  const districts = [
+    "Colombo", "Kandy", "Galle", "Matara", "Kurunegala", "Gampaha", "Jaffna",
+    "Anuradhapura", "Polonnaruwa", "Batticaloa", "Trincomalee", "Ratnapura",
+    "Badulla", "Nuwara Eliya", "Hambantota", "Kalutara", "Puttalam", "Monaragala",
+    "Kegalle", "Matale", "Ampara", "Kilinochchi", "Mannar", "Mullaitivu", "Vavuniya"
+  ];
+
+  // Try to find any known district name in the address (case-insensitive)
+  const found = districts.find((d) =>
+    location.toLowerCase().includes(d.toLowerCase())
+  );
+
+  return found || "Unknown";
 };
+
+
 
 
   // Auto fetch nearest salons on page load
