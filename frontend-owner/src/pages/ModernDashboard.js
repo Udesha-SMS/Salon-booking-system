@@ -5,19 +5,54 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import dayjs from 'dayjs';
 
-// ✅ Sidebar component
+// ✅ Calendar-style Sidebar component
 const Sidebar = () => {
   const navigate = useNavigate();
+  const [activeItem, setActiveItem] = useState('dashboard');
+
+  const menuItems = [
+    { icon: 'fas fa-home', path: '/dashboard', key: 'dashboard', title: 'Home' },
+    { icon: 'fas fa-calendar-alt', path: '/calendar', key: 'calendar', title: 'Calendar' },
+    { icon: 'fas fa-cut', path: '/services', key: 'services', title: 'Services' },
+    { icon: 'fas fa-comment-alt', path: '/feedbacks', key: 'feedbacks', title: 'Feedbacks' },
+    { icon: 'fas fa-users', path: '/professionals', key: 'professionals', title: 'Professionals' },
+    { icon: 'fas fa-clock', path: '/timeslots', key: 'timeslots', title: 'Time Slots' },
+  ];
+
+  const handleNavigation = (path, key) => {
+    setActiveItem(key);
+    navigate(path);
+  };
 
   return (
     <aside className="modern-sidebar">
+      {/* Logo */}
       <img src={logo} alt="Brand Logo" className="modern-logo" />
-      <i className="fas fa-home active" title="Home" onClick={() => navigate('/dashboard')}></i>
-      <i className="fas fa-calendar-alt" title="Calendar" onClick={() => navigate('/calendar')}></i>
-      <i className="fas fa-smile" title="Services" onClick={() => navigate('/services')}></i>
-      <i className="fas fa-comment" title="Feedbacks" onClick={() => navigate('/feedbacks')}></i>
-      <i className="fas fa-users" title="Professionals" onClick={() => navigate('/professionals')}></i>
-      <i className="fas fa-clock" title="Time Slots" onClick={() => navigate('/timeslots')}></i>
+      
+      {/* Navigation Menu - Icon Only */}
+      <nav className="sidebar-nav">
+        {menuItems.map((item) => (
+          <div
+            key={item.key}
+            className={`nav-icon ${activeItem === item.key ? 'active' : ''}`}
+            onClick={() => handleNavigation(item.path, item.key)}
+            title={item.title}
+          >
+            <i className={item.icon}></i>
+          </div>
+        ))}
+      </nav>
+
+      {/* Sidebar Footer */}
+      <div className="sidebar-footer">
+        <div 
+          className="nav-icon" 
+          onClick={() => navigate('/help')}
+          title="Help & Support"
+        >
+          <i className="fas fa-question-circle"></i>
+        </div>
+      </div>
     </aside>
   );
 };
@@ -39,6 +74,7 @@ const ModernDashboard = () => {
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [salon, setSalon] = useState(null);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [loading, setLoading] = useState(true);
   const notifRef = useRef();
   const navigate = useNavigate();
 
@@ -77,11 +113,15 @@ const ModernDashboard = () => {
   // ✅ Fetch salon data and appointments
   useEffect(() => {
     const salonData = JSON.parse(localStorage.getItem("salonUser"));
-    if (!salonData?.id) return;
+    if (!salonData?.id) {
+      setLoading(false);
+      return;
+    }
     setSalon(salonData);
 
     const fetchAppointments = async () => {
       try {
+        setLoading(true);
         const res = await axios.get(`http://localhost:5000/api/appointments/salon/${salonData.id}`);
         const all = res.data;
 
@@ -95,6 +135,9 @@ const ModernDashboard = () => {
         setUpcomingAppointments(upcomingList);
       } catch (err) {
         console.error("Failed to fetch appointments", err);
+        alert("Failed to load appointments");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -102,6 +145,30 @@ const ModernDashboard = () => {
   }, []);
 
   const salonId = salon?.id;
+
+  // Quick Stats
+  const stats = {
+    total: appointments.length,
+    today: todayAppointments.length,
+    upcoming: upcomingAppointments.length,
+    pending: appointments.filter(a => a.status?.toLowerCase() === "pending").length
+  };
+
+  if (loading) {
+    return (
+      <div className="modern-full-page">
+        <div className="modern-layout">
+          <Sidebar />
+          <main className="modern-main-content">
+            <div className="loading-spinner">
+              <i className="fas fa-spinner fa-spin"></i>
+              <p>Loading dashboard...</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modern-full-page">
@@ -112,54 +179,88 @@ const ModernDashboard = () => {
         <main className="modern-main-content">
           {/* Header */}
           <header className="modern-header">
-            <h2>Salon Dashboard</h2>
+            <div className="header-left">
+              <h2>Salon Dashboard</h2>
+              <p className="welcome-message">
+                Welcome back, <strong>{salon?.name || 'Salon Owner'}</strong>! 
+                {stats.today > 0 
+                  ? ` You have ${stats.today} appointment${stats.today > 1 ? 's' : ''} today.`
+                  : ' No appointments scheduled for today.'
+                }
+              </p>
+            </div>
+            
             <div className="modern-header-right" ref={notifRef}>
+              {/* Quick Stats */}
+              <div className="quick-stats">
+                <div className="stat-item">
+                  <i className="fas fa-calendar-day"></i>
+                  <span>{stats.today} Today</span>
+                </div>
+                <div className="stat-item">
+                  <i className="fas fa-clock"></i>
+                  <span>{stats.pending} Pending</span>
+                </div>
+              </div>
+
               {/* Notification Bell */}
               <div className="notif-wrapper">
                 <i
                   className="fas fa-bell"
                   title="Notifications"
-                  style={{ position: "relative", cursor: "pointer" }}
                   onClick={() => setShowNotifications(!showNotifications)}
                 >
-                  {appointments.filter(a => a.status.toLowerCase() === "pending").length > 0 && (
+                  {stats.pending > 0 && (
                     <span className="notif-count">
-                      {appointments.filter(a => a.status.toLowerCase() === "pending").length}
+                      {stats.pending}
                     </span>
                   )}
                 </i>
 
                 {showNotifications && (
                   <div className="notif-dropdown">
-                    {appointments.filter(a => a.status.toLowerCase() === "pending").length === 0 ? (
+                    <div className="notif-header">
+                      <h4>Notifications</h4>
+                      <span className="notif-badge">{stats.pending} pending</span>
+                    </div>
+                    {stats.pending === 0 ? (
                       <p className="notif-empty">No pending appointments</p>
                     ) : (
                       appointments
-                        .filter(a => a.status.toLowerCase() === "pending")
+                        .filter(a => a.status?.toLowerCase() === "pending")
+                        .slice(0, 5)
                         .map(appt => (
                           <div key={appt._id} className="notif-item">
-                            <div>
-                              <strong>{appt.user?.name}</strong> - {appt.services[0]?.name} <br />
-                              {formatDate(appt.date)} · {formatTimeRange(appt.startTime, appt.endTime)}
+                            <div className="notif-content">
+                              <strong>{appt.user?.name || 'Customer'}</strong>
+                              <span className="notif-service">{appt.services[0]?.name}</span>
+                              <small>{formatDate(appt.date)} · {formatTimeRange(appt.startTime, appt.endTime)}</small>
                             </div>
                             <button
                               className="notif-read-btn"
                               onClick={async () => {
                                 try {
-                                  await axios.patch(`http://localhost:5000/api/appointments/${appt._id}/status`, { status: "read" });
+                                  await axios.patch(`http://localhost:5000/api/appointments/${appt._id}/status`, { status: "confirmed" });
                                   setAppointments(prev =>
-                                    prev.map(a => a._id === appt._id ? { ...a, status: "read" } : a)
+                                    prev.map(a => a._id === appt._id ? { ...a, status: "confirmed" } : a)
                                   );
                                 } catch (err) {
-                                  console.error("Failed to mark as read:", err);
-                                  alert("Error marking appointment as read");
+                                  console.error("Failed to confirm appointment:", err);
+                                  alert("Error confirming appointment");
                                 }
                               }}
                             >
-                              Mark as read
+                              Confirm
                             </button>
                           </div>
                         ))
+                    )}
+                    {stats.pending > 5 && (
+                      <div className="notif-footer">
+                        <button onClick={() => navigate('/calendar')}>
+                          View all appointments
+                        </button>
+                      </div>
                     )}
                   </div>
                 )}
@@ -167,19 +268,19 @@ const ModernDashboard = () => {
 
               {/* Profile image clickable to Salon Profile */}
               {salonId && (
-                <Link to={`/profile/${salonId}`}>
+                <Link to={`/profile/${salonId}`} className="profile-link">
                   <img
                     src={
                       salon.image
                         ? salon.image.startsWith("http")
                           ? salon.image
                           : `http://localhost:5000/uploads/${salon.image}`
-                        : "https://via.placeholder.com/35"
+                        : "https://via.placeholder.com/40"
                     }
                     alt="Profile"
                     className="modern-profile"
-                    style={{ borderRadius: "50%", cursor: "pointer" }}
                   />
+                  <span className="profile-name">{salon.name}</span>
                 </Link>
               )}
 
@@ -187,18 +288,9 @@ const ModernDashboard = () => {
               <button
                 className="logout-btn"
                 onClick={handleLogout}
-                style={{
-                  marginLeft: "15px",
-                  padding: "5px 12px",
-                  background: "#e74c3c",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                }}
                 title="Logout"
               >
+                <i className="fas fa-sign-out-alt"></i>
                 Logout
               </button>
             </div>
@@ -206,78 +298,163 @@ const ModernDashboard = () => {
 
           {/* Content */}
           <section className="modern-content-area">
-            {/* All Appointments */}
-            <div className="modern-appointments">
-              <h3>Appointment Activity</h3>
-              {appointments.length === 0 && <p>No appointments found.</p>}
-
-              {appointments.map((appt) => (
-                <div key={appt._id} className="modern-card">
-                  <div className="modern-left">
-                    <span><strong>{dayjs(appt.date).format("DD")}</strong> {dayjs(appt.date).format("MMM")}</span>
-                    <h4>{appt.services[0]?.name}</h4>
-                    <small>{formatDate(appt.date)} · {formatTimeRange(appt.startTime, appt.endTime)}</small>
-                    <small>{appt.services[0]?.duration} · {appt.user?.name}</small>
-                    <span className={`modern-tag modern-${appt.status?.toLowerCase()}`}>
-                      {appt.status}
-                    </span>
-                  </div>
-                  <div className="modern-right">
-                    <strong>LKR {appt.services[0]?.price}</strong>
-                  </div>
+            {/* Stats Overview */}
+            <div className="stats-overview">
+              <div className="stat-card">
+                <div className="stat-icon total">
+                  <i className="fas fa-calendar-check"></i>
                 </div>
-              ))}
+                <div className="stat-info">
+                  <h3>{stats.total}</h3>
+                  <p>Total Appointments</p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon today">
+                  <i className="fas fa-sun"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>{stats.today}</h3>
+                  <p>Today's Appointments</p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon upcoming">
+                  <i className="fas fa-calendar-week"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>{stats.upcoming}</h3>
+                  <p>Upcoming</p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <div className="stat-icon pending">
+                  <i className="fas fa-clock"></i>
+                </div>
+                <div className="stat-info">
+                  <h3>{stats.pending}</h3>
+                  <p>Pending Approval</p>
+                </div>
+              </div>
             </div>
 
-            {/* Today Appointments */}
-            <div className="modern-today">
-              <h3>Today's Appointments</h3>
-              {todayAppointments.length === 0 ? (
-                <div className="modern-empty">
-                  <i className="fas fa-clock"></i>
-                  <h4>No Appointments Today</h4>
-                  <p>
-                    Visit the <a href="/calendar">calendar</a> section to schedule appointments.
-                  </p>
+            {/* Main Content Grid */}
+            <div className="dashboard-grid">
+              {/* All Appointments */}
+              <div className="modern-appointments">
+                <div className="section-header">
+                  <h3><i className="fas fa-list-alt"></i> All Appointments</h3>
+                  <span className="section-badge">{appointments.length}</span>
                 </div>
-              ) : (
-                todayAppointments.map((appt) => (
-                  <div key={appt._id} className="modern-card">
-                    <div className="modern-left">
-                      <h4>{appt.services[0]?.name}</h4>
-                      <small>{formatTimeRange(appt.startTime, appt.endTime)} · {appt.user?.name}</small>
-                    </div>
-                    <div className="modern-right">
-                      <strong>LKR {appt.services[0]?.price}</strong>
-                    </div>
+                {appointments.length === 0 ? (
+                  <div className="modern-empty">
+                    <i className="fas fa-calendar-times"></i>
+                    <h4>No Appointments Yet</h4>
+                    <p>Start by creating your first appointment in the calendar section.</p>
                   </div>
-                ))
-              )}
+                ) : (
+                  <div className="appointments-list">
+                    {appointments.slice(0, 6).map((appt) => (
+                      <div key={appt._id} className="modern-card">
+                        <div className="modern-left">
+                          <div className="date-badge">
+                            <span className="date-day">{dayjs(appt.date).format("DD")}</span>
+                            <span className="date-month">{dayjs(appt.date).format("MMM")}</span>
+                          </div>
+                          <div className="appt-details">
+                            <h4>{appt.services[0]?.name}</h4>
+                            <small>{formatDate(appt.date)} · {formatTimeRange(appt.startTime, appt.endTime)}</small>
+                            <small>{appt.services[0]?.duration} · {appt.user?.name}</small>
+                            <span className={`modern-tag modern-${appt.status?.toLowerCase()}`}>
+                              {appt.status}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="modern-right">
+                          <strong>LKR {appt.services[0]?.price}</strong>
+                        </div>
+                      </div>
+                    ))}
+                    {appointments.length > 6 && (
+                      <button 
+                        className="view-all-btn"
+                        onClick={() => navigate('/calendar')}
+                      >
+                        View All Appointments ({appointments.length})
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
 
-              <hr />
+              {/* Today & Upcoming Sidebar */}
+              <div className="modern-side-content">
+                {/* Today Appointments */}
+                <div className="modern-today">
+                  <div className="section-header">
+                    <h3><i className="fas fa-sun"></i> Today's Appointments</h3>
+                    <span className="section-badge today-badge">{todayAppointments.length}</span>
+                  </div>
+                  {todayAppointments.length === 0 ? (
+                    <div className="modern-empty small">
+                      <i className="fas fa-clock"></i>
+                      <h4>No Appointments Today</h4>
+                      <p>Visit the calendar to schedule appointments.</p>
+                    </div>
+                  ) : (
+                    todayAppointments.map((appt) => (
+                      <div key={appt._id} className="modern-card compact">
+                        <div className="modern-left">
+                          <h4>{appt.services[0]?.name}</h4>
+                          <small>{formatTimeRange(appt.startTime, appt.endTime)}</small>
+                          <small>{appt.user?.name}</small>
+                        </div>
+                        <div className="modern-right">
+                          <strong>LKR {appt.services[0]?.price}</strong>
+                          <span className={`status-dot ${appt.status?.toLowerCase()}`}></span>
+                        </div>
+                      </div>
+                    ))
+                  )}
 
-              {/* Upcoming */}
-              <h3>Upcoming Appointments</h3>
-              {upcomingAppointments.length === 0 ? (
-                <div className="modern-empty">
-                  <i className="fas fa-calendar-times"></i>
-                  <h4>No Upcoming Appointments</h4>
-                  <p>Once you create appointments, they will appear here.</p>
+                  {/* Upcoming */}
+                  <div className="upcoming-section">
+                    <div className="section-header">
+                      <h3><i className="fas fa-calendar-week"></i> Upcoming</h3>
+                      <span className="section-badge upcoming-badge">{upcomingAppointments.length}</span>
+                    </div>
+                    {upcomingAppointments.length === 0 ? (
+                      <div className="modern-empty small">
+                        <i className="fas fa-calendar-times"></i>
+                        <h4>No Upcoming</h4>
+                        <p>Future appointments will appear here.</p>
+                      </div>
+                    ) : (
+                      upcomingAppointments.slice(0, 3).map((appt) => (
+                        <div key={appt._id} className="modern-card compact">
+                          <div className="modern-left">
+                            <h4>{appt.services[0]?.name}</h4>
+                            <small>{formatDate(appt.date)} · {formatTimeRange(appt.startTime, appt.endTime)}</small>
+                            <small>{appt.user?.name}</small>
+                          </div>
+                          <div className="modern-right">
+                            <strong>LKR {appt.services[0]?.price}</strong>
+                            <span className={`status-dot ${appt.status?.toLowerCase()}`}></span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {upcomingAppointments.length > 3 && (
+                      <button 
+                        className="view-more-btn"
+                        onClick={() => navigate('/calendar')}
+                      >
+                        View More Upcoming
+                      </button>
+                    )}
+                  </div>
                 </div>
-              ) : (
-                upcomingAppointments.map((appt) => (
-                  <div key={appt._id} className="modern-card">
-                    <div className="modern-left">
-                      <h4>{appt.services[0]?.name}</h4>
-                      <small>{formatDate(appt.date)} · {formatTimeRange(appt.startTime, appt.endTime)}</small>
-                      <small>{appt.user?.name}</small>
-                    </div>
-                    <div className="modern-right">
-                      <strong>LKR {appt.services[0]?.price}</strong>
-                    </div>
-                  </div>
-                ))
-              )}
+              </div>
             </div>
           </section>
         </main>
