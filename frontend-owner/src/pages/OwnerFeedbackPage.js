@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
-import "../css/OwnerFeedbackPage.css"; // reuse same styling
+import "../css/OwnerFeedbackPage.css";
 
 const OwnerFeedbackPage = () => {
   const navigate = useNavigate();
   const salon = JSON.parse(localStorage.getItem("salonUser"));
-  const [feedbacks, setFeedbacks] = useState([]);
-  const [avgRating, setAvgRating] = useState(0);
+  const [professionals, setProfessionals] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Updated Sidebar Component
   const Sidebar = () => {
-    const navigate = useNavigate();
-
     return (
       <aside className="modern-sidebar">
         <img src={logo} alt="Brand Logo" className="modern-logo" />
@@ -26,98 +23,123 @@ const OwnerFeedbackPage = () => {
     );
   };
 
-  const fetchFeedbacks = async () => {
+  const fetchProfessionalsWithFeedbacks = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/feedback/${salon.id}`);
+      const res = await fetch(`http://localhost:5000/api/feedback/with-feedbacks/${salon.id}`);
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setFeedbacks(data);
-
-        if (data.length > 0) {
-          const total = data.reduce((sum, fb) => sum + fb.rating, 0);
-          setAvgRating((total / data.length).toFixed(1));
-        } else {
-          setAvgRating(0);
-        }
-      } else {
-        setFeedbacks([]);
-        setAvgRating(0);
-      }
+      setProfessionals(data);
+      setLoading(false);
     } catch (err) {
-      console.error("Failed to fetch feedbacks", err);
+      console.error("Failed to fetch professionals with feedbacks", err);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (salon?.id) fetchFeedbacks();
+    if (salon?.id) fetchProfessionalsWithFeedbacks();
   }, [salon?.id]);
+
+  const getAverageRating = (feedbacks) => {
+    if (!feedbacks || feedbacks.length === 0) return 0;
+    const total = feedbacks.reduce((sum, fb) => sum + fb.rating, 0);
+    return (total / feedbacks.length).toFixed(1);
+  };
+
+  const getRatingColor = (rating) => {
+    if (rating >= 4) return "#27ae60"; // Green for high ratings
+    if (rating >= 3) return "#f39c12"; // Orange for medium ratings
+    return "#e74c3c"; // Red for low ratings
+  };
 
   return (
     <div className="calendar-container">
       <Sidebar />
 
-      {/* Main Content */}
       <div className="main-content">
         <header className="header">
           <div className="header-content">
             <h1 className="header-title">Customer Feedbacks</h1>
-            <div className="header-actions">
-              
-             
-            </div>
+            <div className="header-decoration"></div>
           </div>
         </header>
 
         <div className="services-body">
-          {/* Summary Panel */}
-          <div className="category-panel">
-            <h3 className="category-title">Summary</h3>
-            <div className="category-item">
-              <span>Total Feedbacks</span>
-              <span>{feedbacks.length}</span>
+          {loading ? (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading feedbacks...</p>
             </div>
-            <div className="category-item">
-              <span>Average Rating</span>
-              <span>{avgRating > 0 ? `⭐ ${avgRating}/5` : "No ratings yet"}</span>
+          ) : professionals.length === 0 ? (
+            <div className="empty-state">
+              <i className="fas fa-comments"></i>
+              <h3>No Professionals Found</h3>
+              <p>Start by adding professionals to your salon team.</p>
             </div>
-          </div>
-
-          {/* Feedback List */}
-          <div className="service-panel">
-            <div className="service-panel-header">
-              <h3>Recent Feedbacks</h3>
-            </div>
-
-            <div className="service-grid">
-              {feedbacks.length === 0 ? (
-                <p className="no-feedback-msg">No feedback received yet.</p>
-              ) : (
-                feedbacks.map((fb) => (
-                  <div key={fb._id} className="service-card">
-                    <div className="service-info">
-                      <strong>{fb.userEmail}</strong>
-                      <span className="rating-stars">
-                        {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
-                      </span>
+          ) : (
+            professionals.map((pro) => {
+              const avgRating = getAverageRating(pro.feedbacks);
+              const ratingColor = getRatingColor(avgRating);
+              
+              return (
+                <div key={pro._id} className="professional-feedback-section">
+                  <div className="professional-header">
+                    <div className="professional-info">
+                      <h3 className="professional-name">{pro.name}</h3>
+                      <span className="professional-role">{pro.role}</span>
                     </div>
-                    <div className="service-price">
-                      <span>
-                        {new Date(fb.createdAt).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
+                    <div className="rating-summary" style={{ borderLeftColor: ratingColor }}>
+                      <div className="avg-rating" style={{ color: ratingColor }}>
+                        {avgRating > 0 ? `⭐ ${avgRating}/5` : "No ratings"}
+                      </div>
+                      <div className="review-count">
+                        {pro.feedbacks.length} {pro.feedbacks.length === 1 ? 'review' : 'reviews'}
+                      </div>
                     </div>
-                    <p className="comment">
-                      {fb.comment || "(No comment provided)"}
-                    </p>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
+
+                  <div className="feedbacks-grid">
+                    {pro.feedbacks.length === 0 ? (
+                      <div className="no-feedback-card">
+                        <i className="fas fa-comment-slash"></i>
+                        <p>No feedback received yet</p>
+                      </div>
+                    ) : (
+                      pro.feedbacks.map((fb) => (
+                        <div key={fb._id} className="feedback-card">
+                          <div className="feedback-header">
+                            <div className="user-info">
+                              <div className="user-avatar">
+                                <i className="fas fa-user"></i>
+                              </div>
+                              <div className="user-details">
+                                <strong className="user-email">{fb.userEmail}</strong>
+                                <span className="feedback-date">
+                                  {new Date(fb.createdAt).toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="rating-stars">
+                              {"★".repeat(fb.rating)}{"☆".repeat(5 - fb.rating)}
+                              <span className="rating-number">({fb.rating})</span>
+                            </div>
+                          </div>
+                          <div className="feedback-comment">
+                            {fb.comment || (
+                              <span className="no-comment">(No comment provided)</span>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
     </div>
