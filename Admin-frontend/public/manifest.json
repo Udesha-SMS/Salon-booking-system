@@ -1,6 +1,6 @@
 {
-  "short_name": "Salon Admin",
-  "name": "Salon Management Admin Dashboard",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
     {
       "src": "favicon.ico",
@@ -23,5 +23,3 @@
   "theme_color": "#000000",
   "background_color": "#ffffff"
 }
-
-
