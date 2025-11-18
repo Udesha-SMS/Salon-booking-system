@@ -1,200 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
+import LoadingSpinner from '../Common/LoadingSpinner';
+import { getCustomers } from '../../services/api';
 import './CustomersPage.css';
 
 const CustomersPage = () => {
   const navigate = useNavigate();
+  const [customers, setCustomers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const customersPerPage = 10;
 
-  // Sample customer data with all requested fields
-  const [customers] = useState([
-    {
-      _id: 1,
-      name: 'Sophia Bennett',
-      email: 'sophia.bennett@email.com',
-      phone: '(555) 123-4567',
-      photoURL: null,
-      bookings: 12,
-      totalSpent: 1800,
-      avgSpend: 150,
-      loyaltyScore: 95,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-15'
-    },
-    {
-      _id: 2,
-      name: 'Ethan Carter',
-      email: 'ethan.carter@email.com',
-      phone: '(555) 234-5678',
-      photoURL: null,
-      bookings: 8,
-      totalSpent: 1600,
-      avgSpend: 200,
-      loyaltyScore: 80,
-      isBlacklisted: false,
-      smsOptIn: false,
-      isRegistered: true,
-      lastBooking: '2024-11-10'
-    },
-    {
-      _id: 3,
-      name: 'Guest (No Account)',
-      email: 'N/A',
-      phone: 'N/A',
-      photoURL: null,
-      bookings: 3,
-      totalSpent: 240,
-      avgSpend: 80,
-      loyaltyScore: null,
-      isBlacklisted: false,
-      smsOptIn: false,
-      isRegistered: false,
-      lastBooking: '2024-11-08'
-    },
-    {
-      _id: 4,
-      name: 'Olivia Martinez',
-      email: 'olivia.m@email.com',
-      phone: '(555) 345-6789',
-      photoURL: null,
-      bookings: 15,
-      totalSpent: 2250,
-      avgSpend: 150,
-      loyaltyScore: 92,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-16'
-    },
-    {
-      _id: 5,
-      name: 'Liam Thompson',
-      email: 'liam.thompson@email.com',
-      phone: '(555) 456-7890',
-      photoURL: null,
-      bookings: 5,
-      totalSpent: 625,
-      avgSpend: 125,
-      loyaltyScore: 65,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-12'
-    },
-    {
-      _id: 6,
-      name: 'Guest (No Account)',
-      email: 'N/A',
-      phone: 'N/A',
-      photoURL: null,
-      bookings: 1,
-      totalSpent: 85,
-      avgSpend: 85,
-      loyaltyScore: null,
-      isBlacklisted: false,
-      smsOptIn: false,
-      isRegistered: false,
-      lastBooking: '2024-11-05'
-    },
-    {
-      _id: 7,
-      name: 'Emma Wilson',
-      email: 'emma.wilson@email.com',
-      phone: '(555) 567-8901',
-      photoURL: null,
-      bookings: 20,
-      totalSpent: 3400,
-      avgSpend: 170,
-      loyaltyScore: 98,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-17'
-    },
-    {
-      _id: 8,
-      name: 'Noah Anderson',
-      email: 'noah.a@email.com',
-      phone: '(555) 678-9012',
-      photoURL: null,
-      bookings: 2,
-      totalSpent: 180,
-      avgSpend: 90,
-      loyaltyScore: 45,
-      isBlacklisted: true,
-      smsOptIn: false,
-      isRegistered: true,
-      lastBooking: '2024-10-28'
-    },
-    {
-      _id: 9,
-      name: 'Ava Garcia',
-      email: 'ava.garcia@email.com',
-      phone: '(555) 789-0123',
-      photoURL: null,
-      bookings: 18,
-      totalSpent: 2880,
-      avgSpend: 160,
-      loyaltyScore: 96,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-14'
-    },
-    {
-      _id: 10,
-      name: 'Guest (No Account)',
-      email: 'N/A',
-      phone: 'N/A',
-      photoURL: null,
-      bookings: 2,
-      totalSpent: 150,
-      avgSpend: 75,
-      loyaltyScore: null,
-      isBlacklisted: false,
-      smsOptIn: false,
-      isRegistered: false,
-      lastBooking: '2024-11-02'
-    },
-    {
-      _id: 11,
-      name: 'James Lee',
-      email: 'james.lee@email.com',
-      phone: '(555) 890-1234',
-      photoURL: null,
-      bookings: 7,
-      totalSpent: 910,
-      avgSpend: 130,
-      loyaltyScore: 72,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-09'
-    },
-    {
-      _id: 12,
-      name: 'Isabella Brown',
-      email: 'isabella.b@email.com',
-      phone: '(555) 901-2345',
-      photoURL: null,
-      bookings: 25,
-      totalSpent: 4250,
-      avgSpend: 170,
-      loyaltyScore: 100,
-      isBlacklisted: false,
-      smsOptIn: true,
-      isRegistered: true,
-      lastBooking: '2024-11-18'
-    }
-  ]);
+  // Fetch customers from API
+  useEffect(() => {
+    const fetchCustomers = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getCustomers();
+        
+        // Transform data to match your UI format
+        const transformedData = data.map(customer => ({
+          _id: customer._id || customer.id,
+          name: customer.name || 'Unknown',
+          email: customer.email || 'N/A',
+          phone: customer.phone || 'N/A',
+          photoURL: customer.photoURL || null,
+          bookings: customer.bookings || 0,
+          totalSpent: customer.totalSpent || 0,
+          avgSpend: customer.avgSpend || 0,
+          loyaltyScore: customer.loyaltyScore || null,
+          isBlacklisted: customer.isBlacklisted || false,
+          smsOptIn: customer.smsOptIn || false,
+          isRegistered: customer.isRegistered !== false,
+          lastBooking: customer.lastBooking || null
+        }));
+        
+        setCustomers(transformedData);
+      } catch (err) {
+        console.error('Failed to fetch customers:', err);
+        setError('Failed to load customers. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCustomers();
+  }, []);
 
   // Filter customers by search
   const filteredCustomers = customers.filter(customer =>
@@ -233,6 +89,22 @@ const CustomersPage = () => {
     if (score >= 50) return '#f59e0b';
     return '#ef4444';
   };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <LoadingSpinner />
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="error-message">{error}</div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>

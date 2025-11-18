@@ -99,67 +99,14 @@ const AdminDashboard = () => {
     await fetchDashboardData();
   };
   
-  // Fetch dashboard data
+  // Fetch dashboard data - UPDATED TO USE REAL API
   const fetchDashboardData = useCallback(async () => {
     try {
       setError(null);
       
-      // Mock data for demonstration
-      const mockData = {
-        totalSalons: 12,
-        totalCustomers: 345,
-        totalEmployees: 45,
-        pendingApprovals: 3,
-        latestBookings: [
-          { 
-            _id: 'b12345',
-            user: { name: 'John Doe' },
-            salonName: 'Beauty Palace',
-            services: [{ name: 'Haircut', price: 30 }],
-            date: new Date(),
-            status: 'Confirmed'
-          },
-          { 
-            _id: 'b12346',
-            user: { name: 'Jane Smith' },
-            salonName: 'Style Studio',
-            services: [{ name: 'Manicure', price: 25 }],
-            date: new Date(),
-            status: 'Completed'
-          }
-        ],
-        latestCancellations: [
-          {
-            _id: 'c12345',
-            user: { name: 'Bob Johnson' },
-            salonName: 'Hair Masters',
-            services: [{ name: 'Coloring' }],
-            date: new Date(),
-            status: 'Cancelled',
-            cancellationReason: 'Personal reasons'
-          }
-        ],
-        totalRevenue: 12500.75,
-        pendingPayments: 1250.50,
-        monthlyData: [
-          { name: 'Jun', bookings: 120, revenue: 2500 },
-          { name: 'Jul', bookings: 145, revenue: 3100 },
-          { name: 'Aug', bookings: 180, revenue: 4200 },
-          { name: 'Sep', bookings: 165, revenue: 3800 },
-          { name: 'Oct', bookings: 150, revenue: 3500 },
-          { name: 'Nov', bookings: 0, revenue: 0 }
-        ],
-        alerts: [
-          { id: 1, type: 'Warning', details: '3 pending salon approvals', action: 'Review' },
-          { id: 2, type: 'Info', details: 'New feature available', action: 'Learn more' }
-        ]
-      };
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Set the mock data
-      setDashboardData(mockData);
+      // Fetch real data from backend
+      const response = await axiosInstance.get('/admin/dashboard/stats');
+      setDashboardData(response.data);
       setLastUpdated(new Date());
       
     } catch (err) {
@@ -168,7 +115,7 @@ const AdminDashboard = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [axiosInstance]);
   
   // Initial data fetch
   useEffect(() => {

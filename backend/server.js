@@ -16,7 +16,10 @@ const appointmentRoutes = require("./routes/appointmentRoutes");
 const userRoutes = require('./routes/userRoutes');
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const familybookingRoutes = require("./routes/familybookingRoutes");
-
+const adminRoutes = require("./routes/adminRoutes");
+const promotionRoutes = require("./routes/promotionRoutes");
+const loyaltyRoutes = require("./routes/loyaltyRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
 // Initialize Express app
 const app = express();
 
@@ -45,6 +48,10 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/uploads/services", express.static(path.join(__dirname, "uploads/services")));
 app.use("/uploads/professionals", express.static(path.join(__dirname, "uploads/professionals")));
+app.use('/api/admin', adminRoutes);
+app.use('/api/promotions', promotionRoutes);
+app.use('/api/loyalty', loyaltyRoutes);
+app.use('/api/payments', paymentRoutes);
 app.use("/api/familybooking", familybookingRoutes);
 
 // Default route

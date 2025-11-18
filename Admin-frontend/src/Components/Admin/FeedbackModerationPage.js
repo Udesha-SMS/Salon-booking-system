@@ -1,105 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
+import LoadingSpinner from '../Common/LoadingSpinner';
+import { getFeedbacks, updateFeedbackStatus } from '../../services/api';
 import './FeedbackModeration.css';
 
 const FeedbackModerationPage = () => {
   const navigate = useNavigate();
+  const [feedbacks, setFeedbacks] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Sample feedback data with realistic reviews
-  const [feedbacks, setFeedbacks] = useState([
-    {
-      _id: 1,
-      status: 'pending',
-      rating: 5,
-      comment: 'Absolutely amazing service! Emily gave me the best haircut I\'ve ever had. The salon is clean, modern, and the staff is so friendly. Will definitely be coming back!',
-      customer: 'Sophia Clark',
-      salon: 'Glam Studio',
-      date: '2024-11-15'
-    },
-    {
-      _id: 2,
-      status: 'pending',
-      rating: 2,
-      comment: 'Disappointed with the service. Had to wait 30 minutes past my appointment time and the stylist seemed rushed. The haircut turned out okay but expected better for the price.',
-      customer: 'Liam Carter',
-      salon: 'Beauty Bar',
-      date: '2024-11-14'
-    },
-    {
-      _id: 3,
-      status: 'approved',
-      rating: 5,
-      comment: 'Best manicure experience ever! The attention to detail was incredible. Olivia was patient and made sure everything was perfect. Highly recommend!',
-      customer: 'Emma Wilson',
-      salon: 'Nail Paradise',
-      date: '2024-11-13'
-    },
-    {
-      _id: 4,
-      status: 'pending',
-      rating: 4,
-      comment: 'Great facial treatment! My skin feels so refreshed. The ambiance was relaxing and the products used were high quality. Only minor issue was the booking process could be smoother.',
-      customer: 'Noah Anderson',
-      salon: 'Spa Serenity',
-      date: '2024-11-12'
-    },
-    {
-      _id: 5,
-      status: 'approved',
-      rating: 5,
-      comment: 'I love my new hair color! The stylist really listened to what I wanted and gave me exactly that. The whole experience from consultation to final result was fantastic.',
-      customer: 'Ava Martinez',
-      salon: 'Color Me Beautiful',
-      date: '2024-11-11'
-    },
-    {
-      _id: 6,
-      status: 'rejected',
-      rating: 1,
-      comment: 'Worst experience. Unprofessional staff, dirty environment. Will never return.',
-      customer: 'Oliver Brown',
-      salon: 'Quick Cuts',
-      date: '2024-11-10'
-    },
-    {
-      _id: 7,
-      status: 'pending',
-      rating: 5,
-      comment: 'The spa package was worth every penny! From the massage to the facial, everything was top-notch. James was professional and made me feel completely relaxed. Can\'t wait to book again!',
-      customer: 'Isabella Davis',
-      salon: 'Luxury Spa & Salon',
-      date: '2024-11-09'
-    },
-    {
-      _id: 8,
-      status: 'approved',
-      rating: 4,
-      comment: 'Good service overall. The pedicure was relaxing and my nails look great. Would give 5 stars but the wait time was a bit long.',
-      customer: 'James Taylor',
-      salon: 'Nail Paradise',
-      date: '2024-11-08'
-    },
-    {
-      _id: 9,
-      status: 'pending',
-      rating: 3,
-      comment: 'Average experience. The cut was decent but nothing special. Staff was friendly enough. Might try a different place next time.',
-      customer: 'Mia Johnson',
-      salon: 'Style Studio',
-      date: '2024-11-07'
-    },
-    {
-      _id: 10,
-      status: 'approved',
-      rating: 5,
-      comment: 'Emily is a hair wizard! She transformed my dull hair into something absolutely gorgeous. The balayage looks natural and beautiful. Thank you!',
-      customer: 'Ethan White',
-      salon: 'Glam Studio',
-      date: '2024-11-06'
-    }
-  ]);
+  // Fetch feedbacks from API
+  useEffect(() => {
+    const fetchFeedbacks = async () => {
+      try {
+        setIsLoading(true);
+        const data = await getFeedbacks();
+        
+        // Transform data to match UI format
+        const transformedData = data.map(feedback => ({
+          _id: feedback._id || feedback.id,
+          status: feedback.status || 'pending',
+          rating: feedback.rating || 0,
+          comment: feedback.review || feedback.comment || '',
+          customer: feedback.customerName || feedback.user?.name || 'Anonymous',
+          salon: feedback.salonId?.name || 'Unknown Salon',
+          date: feedback.createdAt || new Date().toISOString(),
+          professional: feedback.professionalId?.name || 'N/A'
+        }));
+        
+        setFeedbacks(transformedData);
+      } catch (err) {
+        console.error('Failed to fetch feedbacks:', err);
+        setError('Failed to load feedbacks. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeedbacks();
+  }, []);
 
   // Filter feedbacks by search
   const filteredFeedbacks = feedbacks.filter(feedback =>
@@ -116,19 +58,29 @@ const FeedbackModerationPage = () => {
   const negativePercentage = totalFeedbacks > 0 ? Math.round((negativeFeedbacks / totalFeedbacks) * 100) : 0;
 
   // Handle approve action
-  const handleApprove = (feedbackId) => {
-    setFeedbacks(feedbacks.map(f => 
-      f._id === feedbackId ? { ...f, status: 'approved' } : f
-    ));
-    console.log('Approved feedback:', feedbackId);
+  const handleApprove = async (feedbackId) => {
+    try {
+      await updateFeedbackStatus(feedbackId, 'approved');
+      setFeedbacks(feedbacks.map(f => 
+        f._id === feedbackId ? { ...f, status: 'approved' } : f
+      ));
+    } catch (err) {
+      console.error('Failed to approve feedback:', err);
+      alert('Failed to approve feedback. Please try again.');
+    }
   };
 
   // Handle reject action
-  const handleReject = (feedbackId) => {
-    setFeedbacks(feedbacks.map(f => 
-      f._id === feedbackId ? { ...f, status: 'rejected' } : f
-    ));
-    console.log('Rejected feedback:', feedbackId);
+  const handleReject = async (feedbackId) => {
+    try {
+      await updateFeedbackStatus(feedbackId, 'rejected');
+      setFeedbacks(feedbacks.map(f => 
+        f._id === feedbackId ? { ...f, status: 'rejected' } : f
+      ));
+    } catch (err) {
+      console.error('Failed to reject feedback:', err);
+      alert('Failed to reject feedback. Please try again.');
+    }
   };
 
   // Handle view action
@@ -175,6 +127,22 @@ const FeedbackModerationPage = () => {
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <AdminLayout>
+        <LoadingSpinner />
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout>
+        <div className="error-message">{error}</div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
