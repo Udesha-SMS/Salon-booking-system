@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import './CalendarPage.css';
+import axios from '../../Api/axios'; // Import axios
 
 const CalendarPage = () => {
   const navigate = useNavigate();
@@ -10,73 +11,65 @@ const CalendarPage = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2024, 6, 1)); // July 2024
   const [selectedDate, setSelectedDate] = useState(new Date(2024, 6, 15)); // July 15, 2024
   const [searchQuery, setSearchQuery] = useState('');
+  
+  // ✅ NEW: State for appointments from backend
+  const [appointments, setAppointments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Sample appointments data
-  const [appointments] = useState([
-    {
-      id: 1,
-      time: '9:00 AM',
-      customer: 'Sophia Clark',
-      service: 'Haircut & Style',
-      staff: 'Emily White',
-      status: 'Booked',
-      date: '2024-07-15'
-    },
-    {
-      id: 2,
-      time: '10:30 AM',
-      customer: 'Liam Carter',
-      service: 'Manicure',
-      staff: 'Olivia Green',
-      status: 'Booked',
-      date: '2024-07-15'
-    },
-    {
-      id: 3,
-      time: '11:00 AM',
-      customer: 'Emma Wilson',
-      service: 'Facial Treatment',
-      staff: 'Emily White',
-      status: 'Booked',
-      date: '2024-07-15'
-    },
-    {
-      id: 4,
-      time: '1:00 PM',
-      customer: 'Noah Anderson',
-      service: 'Hair Coloring',
-      staff: 'Olivia Green',
-      status: 'Confirmed',
-      date: '2024-07-15'
-    },
-    {
-      id: 5,
-      time: '2:30 PM',
-      customer: 'Ava Martinez',
-      service: 'Pedicure',
-      staff: 'Emily White',
-      status: 'Booked',
-      date: '2024-07-15'
-    },
-    {
-      id: 6,
-      time: '3:30 PM',
-      customer: 'Oliver Brown',
-      service: 'Beard Trim',
-      staff: 'James Taylor',
-      status: 'Pending',
-      date: '2024-07-15'
-    },
-    {
-      id: 7,
-      time: '4:00 PM',
-      customer: 'Isabella Davis',
-      service: 'Spa Package',
-      staff: 'Olivia Green',
-      status: 'Booked',
-      date: '2024-07-15'
+  // ✅ NEW: Function to fetch appointments from backend
+  const fetchAppointments = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Format the selected date as YYYY-MM-DD
+      const formattedDate = selectedDate.toISOString().split('T')[0];
+      
+      // Make API call to backend
+      // Note: You'll need to get the salonId - for now using query without it
+      const response = await axios.get('/appointments', {
+        params: { date: formattedDate }
+      });
+      
+      // Transform backend data to match our frontend format
+      const transformedAppointments = response.data.map(appt => ({
+        id: appt._id,
+        time: formatTime(appt.startTime), // Convert 24h to 12h format
+        customer: appt.user?.name || 'Guest',
+        service: appt.services?.[0]?.name || 'Unknown Service',
+        staff: appt.professionalId?.name || 'Not Assigned',
+        status: appt.status || 'pending',
+        date: appt.date,
+        // Keep original data for updates
+        _id: appt._id,
+        startTime: appt.startTime,
+        endTime: appt.endTime,
+        professionalId: appt.professionalId?._id
+      }));
+      
+      setAppointments(transformedAppointments);
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setError('Failed to load appointments. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
+
+  // ✅ NEW: Helper function to convert 24h time to 12h format (9:00 AM)
+  const formatTime = (time24) => {
+    if (!time24) return '';
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  // ✅ NEW: Fetch appointments when date changes
+  useEffect(() => {
+    fetchAppointments();
+  }, [selectedDate]); // Re-fetch when selected date changes
 
   // Get calendar data
   const getDaysInMonth = (date) => {
@@ -105,28 +98,62 @@ const CalendarPage = () => {
     setSelectedDate(newDate);
   };
 
-  const handleCancelAppointment = (appointmentId) => {
-    console.log('Cancel appointment:', appointmentId);
-    alert('Cancel appointment functionality would be implemented here');
+  // ✅ UPDATED: Cancel appointment with backend
+  const handleCancelAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) {
+      return;
+    }
+
+    try {
+      // Update appointment status to 'cancelled' in backend
+      await axios.patch(`/appointments/${appointmentId}/status`, {
+        status: 'cancelled'
+      });
+      
+      alert('Appointment cancelled successfully!');
+      
+      // Refresh appointments list
+      fetchAppointments();
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      alert('Failed to cancel appointment. Please try again.');
+    }
   };
 
+  // ✅ UPDATED: Reschedule appointment (basic implementation)
   const handleRescheduleAppointment = (appointmentId) => {
-    console.log('Reschedule appointment:', appointmentId);
-    alert('Reschedule appointment functionality would be implemented here');
+    // For now, just show an alert
+    // In the future, you can open a modal to select new date/time
+    alert('Reschedule feature coming soon! You would select a new date and time here.');
+    
+    /* 
+    // Future implementation would look like:
+    const newDate = prompt('Enter new date (YYYY-MM-DD):');
+    const newStartTime = prompt('Enter new start time (HH:mm):');
+    const newEndTime = prompt('Enter new end time (HH:mm):');
+    
+    if (newDate && newStartTime && newEndTime) {
+      axios.patch(`/appointments/${appointmentId}/reschedule`, {
+        date: newDate,
+        startTime: newStartTime,
+        endTime: newEndTime
+      }).then(() => {
+        alert('Appointment rescheduled!');
+        fetchAppointments();
+      }).catch(err => {
+        alert('Failed to reschedule');
+      });
+    }
+    */
   };
 
-  // Filter appointments by selected date and search query
+  // Filter appointments by search query only (date filtering already done by API)
   const filteredAppointments = appointments.filter(apt => {
-    const aptDate = new Date(apt.date);
-    const matchesDate = aptDate.getDate() === selectedDate.getDate() &&
-                       aptDate.getMonth() === selectedDate.getMonth() &&
-                       aptDate.getFullYear() === selectedDate.getFullYear();
-    
     const matchesSearch = apt.customer.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          apt.staff.toLowerCase().includes(searchQuery.toLowerCase());
     
-    return matchesDate && matchesSearch;
+    return matchesSearch;
   });
 
   // Get status badge class
@@ -158,6 +185,19 @@ const CalendarPage = () => {
             </p>
           </div>
         </div>
+
+        {/* ✅ NEW: Error message */}
+        {error && (
+          <div style={{ 
+            padding: '12px', 
+            backgroundColor: '#fee', 
+            color: '#c00', 
+            borderRadius: '8px',
+            marginBottom: '16px'
+          }}>
+            {error}
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="appointments-search-bar">
@@ -242,7 +282,8 @@ const CalendarPage = () => {
             <div className="appointments-table-header">
               <h2 className="table-title">Appointments</h2>
               <div className="appointments-count">
-                {filteredAppointments.length} {filteredAppointments.length === 1 ? 'appointment' : 'appointments'}
+                {/* ✅ NEW: Show loading state */}
+                {loading ? 'Loading...' : `${filteredAppointments.length} ${filteredAppointments.length === 1 ? 'appointment' : 'appointments'}`}
               </div>
             </div>
             
@@ -259,7 +300,14 @@ const CalendarPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAppointments.length === 0 ? (
+                  {/* ✅ NEW: Show loading spinner */}
+                  {loading ? (
+                    <tr>
+                      <td colSpan="6" className="no-appointments">
+                        <p>Loading appointments...</p>
+                      </td>
+                    </tr>
+                  ) : filteredAppointments.length === 0 ? (
                     <tr>
                       <td colSpan="6" className="no-appointments">
                         <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -289,16 +337,18 @@ const CalendarPage = () => {
                           <div className="appointment-actions">
                             <button 
                               className="action-btn cancel-btn"
-                              onClick={() => handleCancelAppointment(appointment.id)}
+                              onClick={() => handleCancelAppointment(appointment._id)}
                               title="Cancel Appointment"
+                              disabled={appointment.status === 'cancelled'}
                             >
                               Cancel
                             </button>
                             <span className="action-separator">/</span>
                             <button 
                               className="action-btn reschedule-btn"
-                              onClick={() => handleRescheduleAppointment(appointment.id)}
+                              onClick={() => handleRescheduleAppointment(appointment._id)}
                               title="Reschedule Appointment"
+                              disabled={appointment.status === 'cancelled'}
                             >
                               Reschedule
                             </button>

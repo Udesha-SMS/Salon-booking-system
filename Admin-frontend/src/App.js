@@ -45,6 +45,7 @@ import PromotionsPage from "./Components/Admin/PromotionsPage";
 import LoyaltyPage from "./Components/Admin/LoyaltyPage";
 import FinancialInsights from "./Components/Admin/FinancialInsights";
 import SettingsPage from "./Components/Admin/SettingsPage";
+import AdminLogin from "./Components/Admin/AdminLogin";
 
 function App() {
   return (
@@ -52,7 +53,7 @@ function App() {
       <Router>
         <Routes>
           {/* Customer Routes */}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<AdminLogin />} />
           <Route path="/login/customer" element={<CustomerLogin />} />
           <Route path="/searchsalon" element={<Searchsalon />} />
           <Route path="/profile" element={<Profile />} /> 
@@ -92,6 +93,8 @@ function App() {
           <Route path="/loyalty" element={<LoyaltyPage />} />
           <Route path="/financial" element={<FinancialInsights />} />
           <Route path="/settings" element={<SettingsPage />} />
+          {/* Admin Routes */}
+          <Route path="/admin-login" element={<AdminLogin />} />
         </Routes>
       </Router>
     </ErrorBoundary>

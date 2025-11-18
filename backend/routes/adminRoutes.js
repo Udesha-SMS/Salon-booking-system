@@ -6,6 +6,32 @@ const Salon = require('../models/Salon');
 const Professional = require('../models/Professional');
 const Feedback = require('../models/feedbackModel');
 
+// Admin Login with hardcoded credentials
+router.post('/login', (req, res) => {
+  const { username, password } = req.body;
+  
+  // Hardcoded admin credentials
+  const ADMIN_USERNAME = 'admin';
+  const ADMIN_PASSWORD = 'admin123';
+  
+  // Validate credentials
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    return res.json({ 
+      success: true, 
+      message: 'Login successful',
+      admin: {
+        username: ADMIN_USERNAME,
+        role: 'admin'
+      }
+    });
+  } else {
+    return res.status(401).json({ 
+      success: false, 
+      message: 'Invalid username or password' 
+    });
+  }
+});
+
 // GET: Dashboard Statistics
 router.get('/dashboard/stats', async (req, res) => {
   try {

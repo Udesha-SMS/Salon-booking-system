@@ -6,9 +6,7 @@ const Professional = require("../models/Professional");
 const dayjs = require("dayjs");
 
 // ✅ SAFER Duration Parser (handles many formats)
-// slotUtils.js
 const durationToMinutes = (durationStr) => {
-
   if (!durationStr) return 30; // fallback default
 
   const str = String(durationStr).trim().toLowerCase();
@@ -26,8 +24,6 @@ const durationToMinutes = (durationStr) => {
 
   return minutes || 30;
 };
-
-
 
 // ✅ Compute end time from start time and duration
 const computeEndTime = (startTime, duration) => {
@@ -157,19 +153,31 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ✅ GET: Appointments by user (email or phone)
+// ✅ GET: Appointments by user (email or phone) OR by date
 router.get("/", async (req, res) => {
-  const { email, phone } = req.query;
+  const { email, phone, date } = req.query;
   try {
-    const query = email
-      ? { "user.email": email }
-      : phone
-      ? { "user.phone": phone }
-      : {};
+    // Build query based on parameters
+    const query = {};
+    
+    if (email) {
+      query["user.email"] = email;
+    }
+    if (phone) {
+      query["user.phone"] = phone;
+    }
+    if (date) {
+      query.date = date;
+    }
+
+    console.log('🔍 Querying appointments with:', query);
 
     const result = await Appointment.find(query)
-      .sort({ createdAt: -1 })
-      .populate("salonId");
+      .sort({ date: 1, startTime: 1 })
+      .populate("salonId")
+      .populate("professionalId");
+    
+    console.log('✅ Found appointments:', result.length);
     res.json(result);
   } catch (err) {
     console.error("❌ Error fetching appointments:", err);
