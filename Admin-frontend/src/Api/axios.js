@@ -2,7 +2,8 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: "http://localhost:5000/api", // Backend shared base URL
-  withCredentials: true,
+  // Remove or set to false
+  withCredentials: false, // ← Change this
 });
 
 export default instance;

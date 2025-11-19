@@ -173,6 +173,28 @@ router.get('/appointments', async (req, res) => {
   }
 });
 
+// PATCH: Update appointment status
+router.patch('/appointments/:id/status', async (req, res) => {
+  try {
+    const { status } = req.body;
+    const updated = await Appointment.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    
+    if (!updated) {
+      return res.status(404).json({ message: 'Appointment not found' });
+    }
+    
+    res.json(updated);
+  } catch (err) {
+    console.error('Error updating appointment status:', err);
+    res.status(500).json({ message: 'Failed to update appointment status' });
+  }
+});
+
+
 // GET: All customers with statistics
 router.get('/customers', async (req, res) => {
   try {

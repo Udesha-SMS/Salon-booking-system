@@ -25,9 +25,8 @@ const CalendarPage = () => {
       // Format the selected date as YYYY-MM-DD
       const formattedDate = selectedDate.toISOString().split('T')[0];
       
-      // Make API call to backend
-      // Note: You'll need to get the salonId - for now using query without it
-      const response = await axios.get('/appointments', {
+      // Make API call to backend - FIXED ENDPOINT
+      const response = await axios.get('/admin/appointments', {
         params: { date: formattedDate }
       });
       
@@ -105,8 +104,8 @@ const CalendarPage = () => {
     }
 
     try {
-      // Update appointment status to 'cancelled' in backend
-      await axios.patch(`/appointments/${appointmentId}/status`, {
+      // Update appointment status to 'cancelled' in backend - FIXED ENDPOINT
+      await axios.patch(`/admin/appointments/${appointmentId}/status`, {
         status: 'cancelled'
       });
       
