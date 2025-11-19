@@ -1,0 +1,347 @@
+/* ===== Promotions Page Styles ===== */
+
+/* Container */
+.promotions-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.promotions-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+/* Tabs */
+.promotions-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: -2px;
+}
+
+.tab-btn:hover {
+  color: #1e293b;
+}
+
+.tab-btn.active {
+  color: #6366f1;
+  border-bottom-color: #6366f1;
+}
+
+/* Overview Section */
+.overview-section {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.overview-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 12px;
+}
+
+.stat-value {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.stat-change {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.stat-change.positive {
+  color: #10b981;
+}
+
+.stat-change.negative {
+  color: #ef4444;
+}
+
+/* Charts */
+.chart-container {
+  margin-top: 20px;
+}
+
+.bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 120px;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.bar {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  background: #e5e7eb;
+  border-radius: 4px 4px 0 0;
+}
+
+.bar-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to top, #e5e7eb, #d1d5db);
+  border-radius: 4px 4px 0 0;
+}
+
+.line-chart {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 12px;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #6366f1;
+  font-weight: 500;
+}
+
+/* Active Promotions Section */
+.active-promotions-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f3f4f6;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+/* Filter Pills */
+.filter-pills {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.filter-pill {
+  padding: 8px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-pill:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+.search-bar i {
+  color: #9ca3af;
+  font-size: 16px;
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.search-bar input::placeholder {
+  color: #9ca3af;
+}
+
+/* Promotions Table */
+.promotions-table-container {
+  overflow-x: auto;
+}
+
+.promotions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.promotions-table thead {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.promotions-table th {
+  text-align: left;
+  padding: 16px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.promotions-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s;
+}
+
+.promotions-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.promotions-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.promotions-table td {
+  padding: 20px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.promo-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.salon-name {
+  color: #6366f1;
+}
+
+.type-name {
+  color: #6366f1;
+}
+
+.date-cell {
+  color: #6366f1;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-active {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* View Details Button */
+.view-details-btn {
+  background: transparent;
+  border: none;
+  color: #6366f1;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.view-details-btn:hover {
+  color: #4f46e5;
+  text-decoration: underline;
+}
+
+/* No Data */
+.no-data {
+  text-align: center;
+  color: #94a3b8;
+  padding: 48px 24px !important;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 24px;
+  }
+
+  .promotions-tabs {
+    overflow-x: auto;
+  }
+
+  .tab-btn {
+    white-space: nowrap;
+  }
+
+  .overview-card {
+    padding: 16px;
+  }
+
+  .stat-value {
+    font-size: 28px;
+  }
+
+  .promotions-table th,
+  .promotions-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+}
